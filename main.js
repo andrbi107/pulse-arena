@@ -270,6 +270,7 @@
     S.particles = [];
     S.shake = 0;
     S.flash = 0;
+    S.killCombo = 0; S.lastKillT = 0;   // v0.0.2 — rapid-kill combo
     S.player.x = W / 2; S.player.y = H / 2;
     S.player.vx = 0; S.player.vy = 0;
     S.player.aim = { x: 1, y: 0 };
@@ -395,6 +396,7 @@
     finalLevel.textContent = S.level;
     AudioS.over();
     setMode('gameover');
+    if (window.MUX) MUX.over();
   }
 
   function advanceLevel() {
@@ -500,7 +502,14 @@
           e.hitFlash = 0.12;
           if (e.hp <= 0) {
             spawnDeathParticles(e);
-            S.score += e.score;
+            // v0.0.2 — rapid-kill combo: kills within 1.5s stack a multiplier
+            var nowK = performance.now();
+            if (nowK - S.lastKillT < 1500) S.killCombo = Math.min(S.killCombo + 1, 8);
+            else S.killCombo = 1;
+            S.lastKillT = nowK;
+            var kMult = 1 + (S.killCombo - 1) * 0.25; // ×1 → ×2.75 cap
+            S.score += Math.round(e.score * kMult);
+            if (window.MUX) MUX.bump();
             if (e.boss) { S.shake = 18; AudioS.boss(); }
             else AudioS.kill();
             S.enemies.splice(i, 1);

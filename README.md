@@ -2,10 +2,18 @@
 
 > یک شوتر بقا دوگانه‌چوب (twin-stick) نئونی top-down که با نقاط نورانی در یک آرنا می‌جنگد — PWA با Vanilla JS.
 
-[![Version](https://img.shields.io/badge/version-v0.0.1-blue)](https://github.com/andrbi107/pulse-arena/releases/tag/v0.0.1) [![PWA](https://img.shields.io/badge/PWA-installable-purple)](https://andrbi107.github.io/pulse-arena/) [![No deps](https://img.shields.io/badge/dependencies-none-success)](https://github.com/andrbi107/pulse-arena) [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-v0.0.2-blue)](https://github.com/andrbi107/pulse-arena/releases/tag/v0.0.2) [![PWA](https://img.shields.io/badge/PWA-installable-purple)](https://andrbi107.github.io/pulse-arena/) [![No deps](https://img.shields.io/badge/dependencies-none-success)](https://github.com/andrbi107/pulse-arena) [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 🎮 **[بازی کن](https://andrbi107.github.io/pulse-arena/)** — نسخه‌ی آنلاین روی GitHub Pages
-📦 **[مخزن گیت‌هاب](https://github.com/andrbi107/pulse-arena)** · 🏷️ **[Release v0.0.1](https://github.com/andrbi107/pulse-arena/releases/tag/v0.0.1)**
+📦 **[مخزن گیت‌هاب](https://github.com/andrbi107/pulse-arena)** · 🏷️ **[Release v0.0.2](https://github.com/andrbi107/pulse-arena/releases/tag/v0.0.2)**
+
+---
+
+## تغییرات v0.0.2 (جدید)
+
+**Pulse Arena** — kill-combo multiplier: killهای پشت‌سرهم در ۱.۵s یک ضریب امتیاز ×۱ → ×۲.۷۵ می‌سازند. به‌علاوه haptic feedback روی kill و game-over.
+
+**همه‌ی بازی‌ها** — فایل مشترک `mobile-ux.js` اضافه شد: haptics خودکار روی دکمه/canvas، prompt نصب PWA (دکمه‌ی «نصب بازی» هنگام eligible)، و badge نسخه در گوشه. cache سرویس‌ورکر به v2 bump شد.
 
 ---
 

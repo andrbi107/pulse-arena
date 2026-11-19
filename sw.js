@@ -1,5 +1,5 @@
-const CACHE = 'pulse-arena-v1';
-const ASSETS = ['./', './index.html', './styles.css', './main.js', './manifest.json', './icon.svg'];
+const CACHE = 'pulse-arena-v2';
+const ASSETS = ['./', './index.html', './mobile-ux.js', './styles.css', './main.js', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
