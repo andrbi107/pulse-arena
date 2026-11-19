@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#05070d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pulse Arena">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Pulse Arena</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<canvas id="game" aria-label="Pulse Arena game canvas"></canvas>
+
+<!-- HUD overlay -->
+<div id="hud" class="hidden" aria-hidden="true">
+  <div class="hud-corner tl">
+    <span class="hud-label">SCORE</span>
+    <span id="scoreVal" class="hud-val">0</span>
+  </div>
+  <div class="hud-corner tc">
+    <span class="hud-label">LEVEL <span id="levelVal">1</span></span>
+    <span id="waveVal" class="hud-sub">0 / 0</span>
+  </div>
+  <div class="hud-corner tr">
+    <span id="livesDots" class="lives"></span>
+    <button id="btnPause" class="hud-btn" type="button" aria-label="Pause" title="Pause">II</button>
+    <button id="btnMute" class="hud-btn" type="button" aria-label="Mute" title="Mute">&#9834;</button>
+  </div>
+</div>
+
+<!-- Touch controls (shown only on coarse-pointer devices via CSS) -->
+<div id="touchControls" class="touch-controls" aria-hidden="true">
+  <div id="movePad" class="pad" role="application" aria-label="Move pad">
+    <div class="pad-base"></div>
+    <div class="pad-knob"></div>
+  </div>
+  <button id="fireBtn" class="fire-btn" type="button" aria-label="Fire at nearest enemy">FIRE</button>
+</div>
+
+<!-- Start screen -->
+<div id="startScreen" class="screen">
+  <h1 class="title">PULSE ARENA</h1>
+  <p class="subtitle">Neon dot survival. Outlast the swarm.</p>
+  <div class="best-line">BEST <span id="bestStart">0</span></div>
+  <button id="btnPlay" class="btn" type="button">PLAY</button>
+  <div class="hints">
+    <span class="hint hint-desktop">WASD / Arrows to move</span>
+    <span class="hint hint-desktop">Mouse aims &middot; hold click to fire</span>
+    <span class="hint hint-desktop">Space fires toward facing &middot; P pauses &middot; M mutes</span>
+    <span class="hint hint-touch">Left pad moves &middot; FIRE auto-aims the nearest enemy</span>
+    <span class="hint hint-touch">Clear every dot in a wave to advance &middot; every 5th level is a boss</span>
+  </div>
+</div>
+
+<!-- Pause overlay -->
+<div id="pauseScreen" class="screen hidden">
+  <h2 class="title-sm">PAUSED</h2>
+  <button id="btnResume" class="btn" type="button">RESUME</button>
+  <button id="btnQuit" class="btn secondary" type="button">HOME</button>
+</div>
+
+<!-- Game over screen -->
+<div id="overScreen" class="screen hidden">
+  <h2 class="title-sm danger">GAME OVER</h2>
+  <div class="stats-block">
+    <div class="stat"><span class="stat-label">SCORE</span><span id="finalScore" class="stat-val">0</span></div>
+    <div class="stat"><span class="stat-label">BEST</span><span id="bestOver" class="stat-val">0</span></div>
+    <div class="stat"><span class="stat-label">LEVEL</span><span id="finalLevel" class="stat-val">1</span></div>
+  </div>
+  <button id="btnRetry" class="btn" type="button">RETRY</button>
+  <button id="btnHome" class="btn secondary" type="button">HOME</button>
+</div>
+
+<script src="main.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+</script>
+</body>
+</html>
