@@ -21,13 +21,17 @@ pickupهای **Shield** (۶s آسیب‌ناپذیری + حلقه‌ی نورا�
 
 ---
 
----
-
-## تغییرات v0.0.2 (جدید)
+## تغییرات v0.0.2
 
 **Pulse Arena** — kill-combo multiplier: killهای پشت‌سرهم در ۱.۵s یک ضریب امتیاز ×۱ → ×۲.۷۵ می‌سازند. به‌علاوه haptic feedback روی kill و game-over.
 
 **همه‌ی بازی‌ها** — فایل مشترک `mobile-ux.js` اضافه شد: haptics خودکار روی دکمه/canvas، prompt نصب PWA (دکمه‌ی «نصب بازی» هنگام eligible)، و badge نسخه در گوشه. cache سرویس‌ورکر به v2 bump شد.
+
+---
+
+## تغییرات v0.0.1
+
+نسخه‌ی پایه‌ی اولیه (پیش از پایداری) — بازی کامل twin-stick arena survival shooter روی HTML5 canvas؛ PWA (manifest + service worker) — قابل نصب و آفلاین؛ README.md کامل با معرفی، کنترل‌ها، مکانیک، شخصی‌سازی و قاعده‌ی SemVer.
 
 ---
 
