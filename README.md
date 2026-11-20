@@ -2,10 +2,18 @@
 
 > یک شوتر بقا دوگانه‌چوب (twin-stick) نئونی top-down که با نقاط نورانی در یک آرنا می‌جنگد — PWA با Vanilla JS.
 
-[![Version](https://img.shields.io/badge/version-v0.0.2-blue)](https://github.com/andrbi107/pulse-arena/releases/tag/v0.0.2) [![PWA](https://img.shields.io/badge/PWA-installable-purple)](https://andrbi107.github.io/pulse-arena/) [![No deps](https://img.shields.io/badge/dependencies-none-success)](https://github.com/andrbi107/pulse-arena) [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-v0.0.4-blue)](https://github.com/andrbi107/pulse-arena/releases/tag/v0.0.4) [![PWA](https://img.shields.io/badge/PWA-installable-purple)](https://andrbi107.github.io/pulse-arena/) [![deps](https://img.shields.io/badge/deps-Howler.js_local-blueviolet)](https://github.com/andrbi107/pulse-arena) [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 🎮 **[بازی کن](https://andrbi107.github.io/pulse-arena/)** — نسخه‌ی آنلاین روی GitHub Pages
-📦 **[مخزن گیت‌هاب](https://github.com/andrbi107/pulse-arena)** · 🏷️ **[Release v0.0.2](https://github.com/andrbi107/pulse-arena/releases/tag/v0.0.2)**
+📦 **[مخزن گیت‌هاب](https://github.com/andrbi107/pulse-arena)** · 🏷️ **[Release v0.0.4](https://github.com/andrbi107/pulse-arena/releases/tag/v0.0.4)**
+
+## تغییرات v0.0.4 (جدید)
+
+pickupهای **Shield** (۶s آسیب‌ناپذیری + حلقه‌ی نورانی) و **Overcharge** (۶s شلیک سه‌راه + نرخ آتش بالاتر) — متمایز از arena-blaster. دستاوردهای Wave 10 / Boss Slayer.
+
+**همه‌ی بازی‌ها (v0.0.4)** — `gamekit.js` مشترک + `vendor/howler.min.js` محلی: صدای Howler با SFX خودکار (pickup/collision/game-over از طریق پل MUX)، صفحه‌ی **راهنما**، صفحه‌ی **تنظیمات** (قطع/وصل صدا)، قلاب‌های تست (`render_game_to_text`/`advanceTime`)، **فول‌اسکرین** (کلید F)، و سیستم **دستاوردها**. cache سرویس‌ورکر به v4 ارتقا یافت (آفلاین کامل با vendor).
+
+---
 
 ---
 

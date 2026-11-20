@@ -28,6 +28,17 @@
     spawnSafeDist: 260,      // min px from player at spawn
     trailMax: 10,
     gridSize: 44,
+    // v0.0.5 — Shield / Overcharge powerups (distinct from arena-blaster's rapid/spread/slow)
+    powerupDropChance: 0.06,      // regular-kill drop chance
+    powerupBossDropChance: 0.6,   // boss-kill drop chance
+    shieldDuration: 6,            // seconds of invulnerability
+    overchargeDuration: 6,        // seconds of 3-way spread + fast fire
+    overchargeFireMult: 0.5,      // fire interval multiplier (faster)
+    overchargeSpread: 0.18,       // radians between spread shots
+    powerupRadius: 13,
+    powerupLife: 12,              // seconds before a dropped powerup expires
+    powerupMagnetRange: 90,
+    powerupMagnetSpeed: 120,
   };
 
   // Enemy archetypes (regular; boss is built separately)
@@ -57,6 +68,10 @@
     shake: 0,
     flash: 0,
     time: 0,
+    // v0.0.5 — Shield + Overcharge powerup timers and active pickups
+    shieldT: 0,
+    overchargeT: 0,
+    powerups: [],
   };
 
   // ===== DOM =====
@@ -80,6 +95,7 @@
   const movePad = el('movePad');
   const padKnob = movePad.querySelector('.pad-knob');
   const fireBtn = el('fireBtn');
+  const powerupHud = el('powerupHud');
 
   // ===== HELPERS =====
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -271,6 +287,9 @@
     S.shake = 0;
     S.flash = 0;
     S.killCombo = 0; S.lastKillT = 0;   // v0.0.2 — rapid-kill combo
+    S.shieldT = 0;                       // v0.0.5 — reset powerups
+    S.overchargeT = 0;
+    S.powerups = [];
     S.player.x = W / 2; S.player.y = H / 2;
     S.player.vx = 0; S.player.vy = 0;
     S.player.aim = { x: 1, y: 0 };
@@ -307,6 +326,16 @@
     }
     S.waveTotal = S.spawnQueue.length;
     S.spawnTimer = 0.3;
+  }
+
+  // v0.0.5 — Shield / Overcharge powerup drops (rare from kills)
+  const POWERUP_TYPES = ['shield', 'overcharge'];
+  function spawnPowerup(x, y) {
+    const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+    S.powerups.push({
+      x: x, y: y, type: type, r: CFG.powerupRadius,
+      bob: Math.random() * Math.PI * 2, life: CFG.powerupLife,
+    });
   }
 
   function spawnEnemy(type) {
@@ -373,13 +402,22 @@
       aim = { x: S.player.aim.x, y: S.player.aim.y };
     }
     if (aim && (Math.abs(aim.x) > 0.001 || Math.abs(aim.y) > 0.001)) {
-      fireBullet(aim.x, aim.y);
-      S.fireCd = CFG.fireInterval;
+      if (S.overchargeT > 0) {
+        // v0.0.5 — Overcharge: simultaneous 3-way spread + faster fire rate
+        const baseAng = Math.atan2(aim.y, aim.x);
+        fireBullet(Math.cos(baseAng - CFG.overchargeSpread), Math.sin(baseAng - CFG.overchargeSpread));
+        fireBullet(aim.x, aim.y);
+        fireBullet(Math.cos(baseAng + CFG.overchargeSpread), Math.sin(baseAng + CFG.overchargeSpread));
+        S.fireCd = CFG.fireInterval * CFG.overchargeFireMult;
+      } else {
+        fireBullet(aim.x, aim.y);
+        S.fireCd = CFG.fireInterval;
+      }
     }
   }
 
   function loseLife() {
-    if (S.invuln > 0) return;
+    if (S.invuln > 0 || S.shieldT > 0) return;   // v0.0.5 — Shield ignores contact damage
     S.lives -= 1;
     S.invuln = CFG.invulnDuration;
     S.shake = 14;
@@ -403,6 +441,8 @@
     S.level += 1;
     S.score += CFG.scorePerWave;
     AudioS.levelup();
+    // v0.0.5 — achievement: reach wave 10
+    if (S.level === 10 && window.GK) { try { GK.achievement('wave10', 'Wave 10', 'Reach wave 10'); } catch (er) {} }
     beginWave();
     updateHUD();
   }
@@ -447,6 +487,29 @@
 
     // Invulnerability timer
     if (S.invuln > 0) S.invuln -= dt;
+    // v0.0.5 — powerup timers
+    if (S.shieldT > 0) S.shieldT = Math.max(0, S.shieldT - dt);
+    if (S.overchargeT > 0) S.overchargeT = Math.max(0, S.overchargeT - dt);
+
+    // v0.0.5 — powerup pickups: bob, magnet toward player, expire, collect
+    for (let i = S.powerups.length - 1; i >= 0; i--) {
+      const pu = S.powerups[i];
+      pu.bob += dt * 3;
+      pu.life -= dt;
+      const ddx = p.x - pu.x, ddy = p.y - pu.y;
+      const dd = Math.hypot(ddx, ddy) || 1;
+      if (dd < CFG.powerupMagnetRange) { pu.x += (ddx / dd) * CFG.powerupMagnetSpeed * dt; pu.y += (ddy / dd) * CFG.powerupMagnetSpeed * dt; }
+      if (dd < p.r + pu.r) {
+        if (pu.type === 'shield') { S.shieldT = CFG.shieldDuration; }
+        else { S.overchargeT = CFG.overchargeDuration; }
+        if (window.MUX) MUX.bump();
+        if (window.GK) { try { GK.sfx('coin'); } catch (er) {} }
+        S.powerups.splice(i, 1);
+        updateHUD();
+        continue;
+      }
+      if (pu.life <= 0) S.powerups.splice(i, 1);
+    }
 
     // Mouse aim (continuous)
     if (mouse.active && !touch.fire) {
@@ -510,8 +573,17 @@
             var kMult = 1 + (S.killCombo - 1) * 0.25; // ×1 → ×2.75 cap
             S.score += Math.round(e.score * kMult);
             if (window.MUX) MUX.bump();
-            if (e.boss) { S.shake = 18; AudioS.boss(); }
-            else AudioS.kill();
+            if (e.boss) {
+              S.shake = 18; AudioS.boss();
+              // v0.0.5 — achievement: first boss kill
+              if (window.GK) { try { GK.achievement('boss1', 'Boss Slayer', 'Defeat a boss'); } catch (er) {} }
+              // v0.0.5 — bosses drop a powerup more often
+              if (Math.random() < CFG.powerupBossDropChance) spawnPowerup(e.x, e.y);
+            } else {
+              AudioS.kill();
+              // v0.0.5 — rare powerup drop from regular kills
+              if (Math.random() < CFG.powerupDropChance) spawnPowerup(e.x, e.y);
+            }
             S.enemies.splice(i, 1);
             updateHUD();
             break;
@@ -520,8 +592,8 @@
       }
     }
 
-    // Player vs enemy
-    if (S.invuln <= 0) {
+    // Player vs enemy — skipped entirely while Shield is active (v0.0.5)
+    if (S.invuln <= 0 && S.shieldT <= 0) {
       for (let i = S.enemies.length - 1; i >= 0; i--) {
         const e = S.enemies[i];
         const rr = e.r + p.r;
@@ -620,6 +692,27 @@
     }
     ctx.globalAlpha = 1;
 
+    // v0.0.5 — powerup pickups (Shield = cyan S, Overcharge = amber O)
+    for (let i = 0; i < S.powerups.length; i++) {
+      const pu = S.powerups[i];
+      const yy = pu.y + Math.sin(pu.bob) * 3;
+      const isShield = pu.type === 'shield';
+      const col = isShield ? '#00e5ff' : '#ffd76a';
+      const fade = pu.life < 3 ? (0.35 + 0.65 * Math.abs(Math.sin(pu.bob * 2))) : 1;
+      ctx.save();
+      ctx.globalAlpha = fade;
+      ctx.shadowColor = col; ctx.shadowBlur = 16;
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(pu.x, yy, pu.r, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#05070d';
+      ctx.font = '700 14px system-ui, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(isShield ? 'S' : 'O', pu.x, yy);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+
     // Bullets (thin yellow streaks)
     ctx.strokeStyle = '#ffe14d';
     ctx.lineWidth = 2.5;
@@ -703,6 +796,22 @@
       ctx.restore();
     }
 
+    // v0.0.5 — Shield glowing ring (always drawn while active, even during i-frame blink)
+    if (S.shieldT > 0) {
+      const pulse = 0.6 + 0.4 * Math.sin(S.time * 8);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.strokeStyle = 'rgba(0,229,255,' + (0.45 + 0.35 * pulse) + ')';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00e5ff';
+      ctx.shadowBlur = 18 * pulse;
+      ctx.beginPath();
+      ctx.arc(0, 0, p.r + 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
     // Damage flash overlay
     if (S.flash > 0) {
       ctx.fillStyle = 'rgba(255,40,60,' + (S.flash * 0.6) + ')';
@@ -759,6 +868,13 @@
       livesDots.appendChild(d);
     }
     bestStart.textContent = S.best.toLocaleString();
+    // v0.0.5 — powerup HUD timers
+    if (powerupHud) {
+      let html = '';
+      if (S.shieldT > 0) html += '<span class="pu-chip shield">SHIELD ' + S.shieldT.toFixed(1) + 's</span>';
+      if (S.overchargeT > 0) html += '<span class="pu-chip over">OVER ' + S.overchargeT.toFixed(1) + 's</span>';
+      powerupHud.innerHTML = html;
+    }
   }
 
   // ===== LOOP =====
@@ -770,6 +886,7 @@
     if (S.mode === 'playing') {
       update(dt);
       render();
+      updateHUD();   // v0.0.5 — per-frame HUD refresh for powerup timers
     } else if (S.mode === 'paused') {
       render();
     } else {
@@ -796,3 +913,8 @@
   setMode('start');
   requestAnimationFrame(loop);
 })();
+// ---- v0.0.4 gamekit wiring ----
+if (window.GK) {
+  GK.help({ title: "Pulse Arena", objective: "Survive endless waves of enemies. A boss appears every 5th wave.", controls: ["WASD / Arrows: move","Mouse: aim","Space / Click: fire","Touch: drag to move, auto-fire","P: pause","F: fullscreen","H: help"], tips: "Pick up drops for powerups." });
+  GK.exposeState(function () { try { return { score: (window.S && window.S.score) || window.score || 0, mode: (window.S && window.S.mode) || 'play', wave: (window.S && window.S.wave) || 0 }; } catch (e) { return {}; } });
+}
